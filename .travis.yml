@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker
+# 1. build project test version(here client only)
+before_install:
+  - docker build -t bnassivet/react-test -f ./client/Dockerfile.dev ./client
+# 2. test running section
+script:
+  - docker run -e CI=true bnassivet/react-test npm test -- --coverage
+# 3. Build and deploy prod version
+# 3.1. build prod version
+after_success:
+  - docker_build -t bnassivet/multi-client -f ./client
+  - docker build -t bnassivet/multi-nginx -f ./nginx
+  - docker build -t bnassivet/multi-server -f ./server
+  - docker build -t bnassivet/multi-worker -f ./worker
+# 3.2 Log in to docker (Hub) CLI
+#  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# 3.3 Take those images and push then to DockerHub
+#  - docker push bnassivet/multi-client
+#  - docker push bnassivet/multi-nginx
+#  - docker push bnassivet/multi-server
+# - docker push bnassivet/multi-worker
